@@ -1,0 +1,87 @@
+{% extends 'base.html.twig' %}
+{% block title %} Клиенты (пассивные) {% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+{% block controlpanel %}
+    <form action="{{ path('clients_old') }}" method="post" id="clientform">
+        <div id="buttons">
+            {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_DIRECTOR') or is_granted('ROLE_REGION') %}
+                <select id="searchselectclientold_l" class="searchselect" name="cache_lombard">
+                    {% for lombard in lombards %}
+                        <option {% if app.session.get('cache_lombard') == lombard.id %}selected="selected"{% endif %}
+                                value="{{ lombard.id }}">{{ lombard }}</option>
+                    {% endfor %}
+                </select>
+            {% endif %}
+            <a id="export" href="{{ path('clients_pdf', { 'view': 'old' }) }}">Печать</a>
+        </div>
+        <!--search-->
+        <div id="search">
+            <input id="orderclient" class="inputsearch" type="hidden" name="orderclient"
+                   value="{% if order %}{{ order }}{% else %} {% endif %}"/>
+            <input id="orderdirclient" class="inputsearch" type="hidden" name="orderdirclient"
+                   value="DESC"/>
+        </div>
+        <!--date-->
+        <div id="date-range">
+            <div id="datepicker-calendar"></div>
+            <input id="searchbuttonclient" class="searchbutton" type="submit" name="searchbuttonclient" value="ПОИСК"/>
+            <input id="resetbuttonclient" class="searchbutton" type="submit" name="resetbuttonclient" value="ОЧИСТИТЬ"/>
+        </div>
+        <!--filter-->
+        <div id="filter" class="controlpanel-filter">
+            <div class="controlpanel-filter-item">
+                <select name="filterclient" class="searchselect" id="searchselectclient">
+                    <option value="all">все</option>
+                    {% for status in statuses %}
+                        <option value="{{ status.id }}" {% if(filter==status.id) %} selected="selected" {% endif %}>{{ status.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="controlpanel-filter-item">
+                <select name="filterclienttype" class="searchselect" id="searchselectclienttype">
+                    <option value="all">все</option>
+                    {% for type in types %}
+                        <option value="{{ type.id }}" {% if(filtertype==type.id) %} selected="selected" {% endif %}>{{ type.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+{% block content %}
+    <table class="records_list table table-bordered table-hover list fixed">
+        <thead>
+        <tr>
+            <th><a href="#" onclick="order_client('c.firstname', {% if orderdir=='DESC' %}'ASC'{% else %}'DESC'{% endif %})">ФИО</a></th>
+            <th><a href="#" onclick="order_client('c.inn', {% if orderdir=='DESC' %}'ASC'{% else %}'DESC'{% endif %})">ИНН</a></th>
+            <th><a href="#" onclick="order_client('c.cell_phone', {% if orderdir=='DESC' %}'ASC'{% else %}'DESC'{% endif %})">Сот.тел.</a></th>
+            <th><a href="#" onclick="order_client('c.referenceClientStatus', {% if orderdir=='DESC' %}'ASC'{% else %}'DESC'{% endif %})">Cтатус </a></th>
+            <th>Документ</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for entity in entities %}
+            <tr>
+                <td><a href="{{ path('clients_show', { 'id': entity.id, 'view': 'old' }) }}">{{ entity }}</a></td>
+                <td>{{ entity.inn }}</td>
+                <td>{{ entity.phone }}<br/>{{ entity.cellphone }}</td>
+                <td>
+                    <span style="color:{{ entity.referenceClientStatus.color }}">{{ entity.referenceClientStatus }}</span>
+                </td>
+                <td>
+                    {% if entity.identityCard != '' %}
+                        {{ entity.identityCard }}
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <p>
+        Общее количество: <strong>{{ countAll }}</strong>
+    </p>
+    {{ pagerfanta(pagerfanta, 'twitter_bootstrap_translated') }}
+    {{ template_pagination_limit.render(pagerfanta)|raw }}
+{% endblock %}

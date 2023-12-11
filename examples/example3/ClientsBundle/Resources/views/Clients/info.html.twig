@@ -1,0 +1,14 @@
+<a target="_blank" href="{{ path('clients_show', { 'id': entity.id }) }}">{{ entity }}</a><br>
+Документ: {{ entity.identityCard }} 
+выдан {{ entity.identityCard.getDateIssue()|date('d.m.y') }} 
+                            {{ entity.identityCard.department }} 
+дейст. до {%if entity.identityCard.validity %} 
+                        {{ entity.identityCard.validity|date('d.m.y')  }}
+                    {% endif %}<br>
+Тел: {{ entity.phone }} {%if entity.cellPhone %}{{entity.cellPhone}}{%endif%}<br>
+Адрес: {{ entity.address }}<br>
+<span style="color:{{ entity.referenceClientStatus.color }}">Статус: {{ entity.referenceClientStatus }}</span><br/>
+Примечание: {{ entity.note }}<br>
+{% if entity.email %}
+    <span id="client-email">Эл. адрес: {{ entity.email }}</span>
+{% endif %}

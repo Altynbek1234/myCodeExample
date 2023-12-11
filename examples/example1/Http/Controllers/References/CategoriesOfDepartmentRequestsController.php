@@ -1,0 +1,66 @@
+<?php
+
+namespace App\Http\Controllers\References;
+
+use App\Http\Controllers\Controller;
+use App\Http\Resources\References\CategoriesOfDepartmentRequestsResource;
+use App\Models\CategoriesOfDepartmentRequests;
+use Symfony\Component\HttpFoundation\Response;
+
+class CategoriesOfDepartmentRequestsController extends Controller
+{
+    /**
+     * @OA\Get(
+     *      path="api/reference/categories_of_department_requests",
+     *      tags={"Cправочники"},
+     *      summary="Справочник категорий обращений отдельных отделов",
+     *      description="Справочник категорий обращений отдельных отделов",
+     *          @OA\Response(
+     *              response="200",
+     *              description="Returns the  collection",
+     *              @OA\JsonContent(
+     *                  type="array",
+     *                  @OA\Items(ref="#/components/schemas/CategoriesOfDepartmentRequestsResource")
+     *              )
+     *          ),
+     *          @OA\Parameter(
+     *               name="page",
+     *               description="Page number",
+     *               required=false,
+     *               in="path",
+     *               @OA\Schema(
+     *                   type="integer"
+     *               )
+     *          ),
+     *          @OA\Response(
+     *              response=401,
+     *              description="Unauthenticated",
+     *          ),
+     *          @OA\Response(
+     *              response=404,
+     *              description="Not Found"
+     *          ),
+     *          @OA\Response(
+     *              response=419,
+     *              description="CSRF token mismatch"
+     *          ),
+     *          @OA\Response(
+     *              response=403,
+     *              description="Forbidden"
+     *          ),
+     *          @OA\Response(
+     *              response=500,
+     *              description="Server Error"
+     *          )
+     *     )
+     */
+
+    public function index()
+    {
+        $codr = CategoriesOfDepartmentRequests::where('status_id', 1)
+            ->paginate(10);
+        return (CategoriesOfDepartmentRequestsResource::collection($codr))
+            ->response()
+            ->setStatusCode(Response::HTTP_OK);
+    }
+}

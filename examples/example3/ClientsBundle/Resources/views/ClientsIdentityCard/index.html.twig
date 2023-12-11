@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+{% block title %} Клиенты / Удостоверение личности {% endblock %}
+{% block controlpanel %}
+    <div id="buttons">
+        {% if not is_granted('ROLE_DIRECTOR') %}
+            <a id="add" href="{{ path('clients_identitycard_new') }}">Добавить удостоверение личности</a>
+        {% endif %}
+    </div>
+    <div id="search">
+        <!--будет вывод через модуль поиска-->
+        <form>
+            <input id="searchfield" class="inputsearch" type="text" name="searchfield" value=""/>
+            <input id="searchbutton" class="searchbutton" type="button" name="searchbutton" value="ПОИСК"/>
+
+            <p>Номер Залогового билета, ИНН, ФИО клиента</p>
+        </form>
+    </div><!--search-->
+{% endblock %}
+{% block content %}
+    <table class="records_list table table-bordered table-hover fixed">
+        <thead>
+        <tr>
+            <th>Клиент</th>
+            <th>Номер</th>
+            <th>Дата выдачи</th>
+            <th>Орган выдавший документ</th>
+            <th>Дата истечения</th>
+            <th>Действия</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for entity in entities %}
+            <tr>
+                <td>{{ entity.client }} </td>
+                <td>{{ entity.number }}</td>
+                <td>{% if entity.dateissue %}{{ entity.dateissue|date('d.m.Y') }}{% endif %}</td>
+                <td>{{ entity.department }}</td>
+                <td>{% if entity.validity %}{{ entity.validity|date('d.m.Y') }}{% endif %}</td>
+                <td>{% if not is_granted('ROLE_DIRECTOR') %}
+                        <div class="btn-toolbar" style="margin: 0;">
+                            <a class="btn"
+                               href="{{ path('clients_identitycard_show', { 'id': entity.id }) }}">Показать</a>
+                            <a class="btn" href="{{ path('clients_identitycard_edit', { 'id': entity.id }) }}">Редактировать</a>
+                        </div>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

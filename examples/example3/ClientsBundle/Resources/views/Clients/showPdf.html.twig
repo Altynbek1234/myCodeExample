@@ -1,0 +1,131 @@
+<table border="1" style="width: 100%">
+    <tbody>
+    <tr>
+        <th>ФИО</th>
+        <td>{{ entity.lastname }} {{ entity.firstname }} {{ entity.secondname }}</td>
+    </tr>
+    <tr>
+        <th>Пол</th>
+        <td>{{ entity.referenceGender }}</td>
+    </tr>
+    <tr>
+        <th>Дата рождения</th>
+        <td>{{ entity.birthdate|date('d.m.Y') }}</td>
+    </tr>
+    <tr>
+        <th>Cемейное положение</th>
+        <td>{{ entity.referenceFamily }}</td>
+    </tr>
+    <tr>
+        <th>Гражданство</th>
+        <td>{{ entity.identityCard.referenceCountry }}</td>
+    </tr>
+    <tr>
+        <th>ИНН</th>
+        <td>{{ entity.inn }}</td>
+    </tr>
+    <tr>
+        <th>Адрес</th>
+        <td>{{ entity.address }}</td>
+    </tr>
+    <tr>
+        <th>Телефон</th>
+        <td>{{ entity.phone }} {{ entity.cellphone }}</td>
+    </tr>
+    <tr>
+        <th>Email</th>
+        <td>{{ entity.email }}</td>
+    </tr>
+    <tr>
+        <th>Примечание</th>
+        <td>{{ entity.note }}</td>
+    </tr>
+    {% if entity.referenceClientType.id !=1 %}
+        <tr>
+            <th>Орг.-правовая форма</th>
+            <td>{{ entity.referenceLegalForm }}</td>
+        </tr>
+        <tr>
+            <th>Наименование</th>
+            <td>{{ entity.legalname }}</td>
+        </tr>
+        <tr>
+            <th>ИНН</th>
+            <td>{{ entity.legalInn }}</td>
+        </tr>
+        <tr>
+            <th>ОКПО</th>
+            <td>{{ entity.okpo }}</td>
+        </tr>
+        <tr>
+            <th>Банковские реквизиты</th>
+            <td>{{ entity.bankaccount }}</td>
+        </tr>
+        <tr>
+            <th>Род деятельности</th>
+            <td>{{ entity.bussiness }}</td>
+        </tr>
+        <tr>
+            <th>Налоговая</th>
+            <td>{{ entity.tax }}</td>
+        </tr>
+    {% endif %}
+    <tr>
+        <th>Статус</th>
+        <td><span style="color:{{ entity.referenceClientStatus.color }}">{{ entity.referenceClientStatus }}</span>
+        </td>
+    </tr>
+    <tr>
+        <th>Документы</th>
+        <td>
+            {% if entity.identityCard != '' %}
+                {{ entity.identityCard }}
+            {% endif %}
+        </td>
+    </tr>
+    </tbody>
+</table>
+<h4>Кредитная история</h4>
+<table border="1" style="width: 100%">
+    <thead>
+    <tr>
+        <th style="width: 5%">№</th>
+        <th style="width: 10%">Серия и номер ЗБ</th>
+        <th style="width: 8%">Дата выдачи кредита</th>
+        <th style="width: 5%">% ставка</th>
+        <th style="width: 8%">Сумма кредита</th>
+        <th style="width: 5%">Срок окончания кредита</th>
+        <th style="width: 8%">Срок кредита</th>
+        <th style="width: 8%">Сумма %</th>
+        <th style="width: 15%">Залоговое имущество (Вид залога, описание, стоянка)</th>
+        <th style="width: 8%">Статус</th>
+        <th>Оценщик</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for blank in entity.blanksPladges %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ blank.blanksstrict }}</td>
+            <td>{% if blank.date %}{{ blank.date|date('d.m.y') }}{% endif %}</td>
+            <td>{{ blank.procent }}</td>
+            <td>{{ blank.assessedValue }}</td>
+            <td>{% if blank.datePay %}{{ blank.datePay|date('d.m.y') }}{% endif %}</td>
+            <td>{{ blank.day }} дней<br/></td>
+            <td>{{ blank.sum }}</td>
+            <td>{{ blank.referencePledge }} <br/> {{ blank.name }}<br/>
+                {% if blank.auto %}
+                    <span style="color: green">Доверенность до: {{ blank.auto.validityLombard|date('d.m.y') }}</span>
+                {% endif %}
+            </td>
+            <td>{{ blank.referenceBlankPledgeStatus }}</td>
+            <td>
+                {% if blank.user is defined and blank.user.staff is defined %}
+                    {{ blank.user.staff.fio }}
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+

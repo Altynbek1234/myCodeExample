@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+{% block title %} Клиенты {% endblock %}
+{% block controlpanel%}
+<div id="buttons"> 
+    <a id="add" href="{{ path('clients_new') }}">Добавить клиента</a>
+</div>
+<div id="search">
+    <!--будет вывод через модуль поиска-->
+    <form>
+        <input id="searchfield" class="inputsearch" type="text" name="searchfield" value=""/>
+        <input id="searchbutton" class="searchbutton" type="button" name="searchbutton" value="ПОИСК"/>
+        <p>Номер Залогового билета, ИНН, ФИО клиента</p>
+    </form>
+</div><!--search-->
+{% endblock %}
+{% block content %}
+<table class="records_list table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>Клиент</th>
+            <th>Дата</th>
+            <th>Примечание</th>
+            <th>Статус</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for entity in entities %}
+        <tr>
+            <td><a href="{{ path('clients_show', { 'id': entity.client.id }) }}">{{ entity.client.lastname }} {{ entity.client.firstname }} {{ entity.client.secondname }}</a></td>
+            <td>{% if entity.dateadd %}{{ entity.dateadd|date('Y-m-d H:i:s') }}{% endif %}</td>
+            <td>{{ entity.note }}</td>
+            <td><span style="color:{{ entity.referenceClientStatus.color }}">{{ entity.referenceClientStatus.name }}</span></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

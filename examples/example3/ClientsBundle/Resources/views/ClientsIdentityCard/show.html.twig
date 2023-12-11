@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+{% block title %} Клиенты {% endblock %}
+{% block controlpanel%}
+<div id="buttons"> 
+    <a id="add" href="{{ path('clients_identitycard_new') }}">Добавить удостоверение личности</a>
+</div>
+<div id="search">
+    <!--будет вывод через модуль поиска-->
+    <form>
+        <input id="searchfield" class="inputsearch" type="text" name="searchfield" value=""/>
+        <input id="searchbutton" class="searchbutton" type="button" name="searchbutton" value="ПОИСК"/>
+        <p>Номер Залогового билета, ИНН, ФИО клиента</p>
+    </form>
+</div><!--search-->
+{% endblock %}
+{% block content %}
+<table class="record_properties table table-bordered table-hover">
+    <tbody>
+        <tr>
+            <th>Клиент</th>
+            <td>{{ entity.client }}</td>
+        </tr>
+        <tr>
+            <th>Номер документа</th>
+            <td>{{ entity.number }}</td>
+        </tr>
+        <tr>
+            <th>Дата выдачи</th>
+            <td>{{ entity.dateissue|date('d.m.Y') }}</td>
+        </tr>
+        <tr>
+            <th>Гражданство</th>
+            <td>{{ entity.referenceCountry.name }}</td>
+        </tr>
+        <tr>
+            <th>Орган выдавший документ</th>
+            <td>{{ entity.department }}</td>
+        </tr>
+        <tr>
+            <th>Срок действия</th>
+            <td>{{ entity.validity|date('d.m.Y') }}</td>
+        </tr>
+        <tr>
+            <th>Вид документа</th>
+            <td>{{ entity.referenceDocumentType.name }}</td>
+        </tr>
+        <tr>
+            <th>Статус документа</th>
+            <td>{{ entity.referencePasportStatus.name|default }}</td>
+        </tr>
+        
+    </tbody>
+</table>
+
+<ul class="record_actions" style="list-style: none">
+    <li>
+        <form action="{{ path('clients_identitycard_delete', { 'id': entity.id }) }}" method="post">
+            {{ form_widget(delete_form) }}
+            <a class="btn btn-primary" href="{{ path('clients_identitycard_edit', { 'id': entity.id }) }}">
+                Редактировать
+            </a>
+            <button type="submit" class="btn btn-danger">Удалить</button>
+        </form>
+    </li>
+</ul>
+{% endblock %}

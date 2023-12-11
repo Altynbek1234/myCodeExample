@@ -1,0 +1,44 @@
+{% block content %}
+    <h3 style="text-align: center">Клиенты <i>{{ dateFrom }} - {{ dateTo }}</i> Дата и время печати
+            - {{ date('now')|date('d.m.Y H:i:s') }}</h3>
+    <h3>Количество на указанную дату: {{sum}}<br/> 
+    Общее количество: {{countAll}}</h3> 
+    {% if sum != 0 %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>ФИО</th>
+                    <th>ИНН</th>
+                    <th>Сот.тел.</th>
+                    <th>Cтатус</th>
+                    <th>Каналы привлечения</th>
+                    <th>Документ</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entity in entities %}
+                    <tr>
+                        <td>{{ entity }}</td>
+                        <td>{{ entity.inn }}</td>
+                        <td>{{ entity.cellphone }}</td>
+                        <td>{{ entity.referenceClientStatus }}</td>
+                        <td>
+		  							{% if entity.clientsChannels != null %}
+										{% for clientChannel in entity.clientsChannels %}
+											<span> {{ clientChannel.channel }}</span>; 
+										{% endfor %}
+									{% else %}
+										<span>данные отсутствуют</span>
+									{% endif %}
+								</td>
+                        <td>
+                            {% if entity.identityCard != '' %}
+                                {{ entity.identityCard }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endblock %}

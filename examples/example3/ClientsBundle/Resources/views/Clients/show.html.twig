@@ -1,0 +1,340 @@
+{% extends 'base.html.twig' %}
+{% block title %} Клиенты {% endblock %}
+{% block controlpanel %}
+    <div id="buttons" style="width: 100%">
+        <a class="btn_a" href="{{ view == 'old' ? path('clients_old') : path('clients') }}">Назад</a>
+        <a class="btn_a" href="{{ path('clients_edit', {'id':entity.id}) }}">Редактировать</a>
+        <a class="btn_a" href="{{ path('clients_pdfShow', {'id':entity.id}) }}">Печать</a>
+    </div>
+{% endblock  controlpanel %}
+{% block content %}
+    <table class="records_list table table-bordered table-hover">
+        <tbody>
+        <tr>
+            <th>Id</th>
+            <td>{{ entity.id }}</td>
+        </tr>
+        <tr>
+            <th>ФИО</th>
+            <td>{{ entity.lastname }} {{ entity.firstname }} {{ entity.secondname }}</td>
+        </tr>
+        <tr>
+            <th>Пол</th>
+            <td>{{ entity.referenceGender }}</td>
+        </tr>
+        {#<tr>#}
+        {#<th>Дата рождения</th>#}
+        {#<td>{{ entity.birthdate|date('d.m.Y') }}</td>#}
+        {#</tr>#}
+        <tr>
+            <th>Cемейное положение</th>
+            <td>{{ entity.referenceFamily }}</td>
+        </tr>
+        <tr>
+            <th>Гражданство</th>
+            <td>{{ entity.identityCard.referenceCountry|default }}</td>
+        </tr>
+        <tr>
+            <th>ИНН</th>
+            <td>{{ entity.inn }}</td>
+        </tr>
+        <tr>
+            <th>Адрес</th>
+            <td>{{ entity.address }}</td>
+        </tr>
+        <tr>
+            <th>Телефон</th>
+            <td>{{ entity.phone }} {{ entity.cellphone }}</td>
+        </tr>
+        <tr>
+            <th>Номер для уведомлений об оплате</th>
+            <td>{{ entity.smsPhone }}</td>
+        </tr>
+        <tr>
+            <th>Email</th>
+            <td>{{ entity.email }}</td>
+        </tr>
+        <tr>
+            <th>Примечание</th>
+            <td>{{ entity.note }}</td>
+        </tr>
+        {% if entity.referenceClientType.id !=1 %}
+            <tr>
+                <th>Орг.-правовая форма</th>
+                <td>{{ entity.referenceLegalForm }}</td>
+            </tr>
+            <tr>
+                <th>Наименование</th>
+                <td>{{ entity.legalname }}</td>
+            </tr>
+            <tr>
+                <th>ИНН</th>
+                <td>{{ entity.legalInn }}</td>
+            </tr>
+            <tr>
+                <th>ОКПО</th>
+                <td>{{ entity.okpo }}</td>
+            </tr>
+            <tr>
+                <th>Банковские реквизиты</th>
+                <td>{{ entity.bankaccount }}</td>
+            </tr>
+            <tr>
+                <th>Род деятельности</th>
+                <td>{{ entity.bussiness }}</td>
+            </tr>
+            <tr>
+                <th>Налоговая</th>
+                <td>{{ entity.tax }}</td>
+            </tr>
+        {% endif %}
+        <tr>
+            <th>Статус</th>
+            <td><span style="color:{{ entity.referenceClientStatus.color }}">{{ entity.referenceClientStatus }}</span>
+            </td>
+        </tr>
+        <tr>
+            <th>Каналы привлечения клиента</th>
+            <td>
+		  			{% if entity.clientsChannels != null %}
+						{% for clientChannel in entity.clientsChannels %}
+							{% if clientChannel.channel.id == clientChannel.channel.otherId %}
+								<span> {{ clientChannel.other }}</span>;
+									{% else %}
+								<span> {{ clientChannel.channel }}</span>;
+							{% endif %} 
+						{% endfor %}
+					{% else %}
+							<span>данные отсутствуют</span>
+					{% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>Документы</th>
+            <td>
+                {% if entity.identityCard != '' %}
+                    {{ entity.identityCard }}
+                    {% if not is_granted('ROLE_DIRECTOR') %}
+                        <a class="btn" href="{{ path('clients_identitycard_edit', { 'id': entity.identityCard.id }) }}">
+                            Редактировать документ
+                        </a>
+                    {% endif %}
+                {% else %}
+                    <a class="btn" href="{{ path('clients_identitycard_add', { 'id': entity.id }) }}">Добавить
+                        документ</a>
+                {% endif %}
+
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <h4>Кредитная история</h4>
+    <table class="records_list table table-bordered table-hover">
+        <thead>
+        <tr>
+            <th style="width: 5%">№</th>
+            <th style="width: 10%">Серия и номер ЗБ</th>
+            <th style="width: 8%">Дата выдачи кредита</th>
+            <th style="width: 5%">% ставка</th>
+            <th style="width: 8%">Сумма кредита</th>
+            <th style="width: 5%">Срок окончания кредита - Фактическая дата гашения</th>
+            <th style="width: 8%">Срок кредита</th>
+            <th style="width: 8%">Сумма %</th>
+            <th style="width: 15%">Залоговое имущество (Вид залога, описание, стоянка)</th>
+            <th tyle="width: 15%">Тип опирации</th>
+            <th style="width: 8%">Статус</th>
+            <th style="width: 8%">Кол-во просроченых дней</th>
+            <th style="width: 8%">Оценщик</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% set i = 1 %}
+        {% for blank in entity.blanksPladges %}
+            {% for operation in blank.getBlanksPledgeOperations %}
+                {% if operation.getStatus%}
+                    {% if operation.operationType.id != 2 %}
+                        <tr>
+                            <td>{{ i }}</td>
+                            <td><a href="{{ path('blanks-pledge-show', { 'id': blank.id }) }}">{{ operation.number}}</a></td>
+                            <td>{% if operation.date %}{{ operation.date|date('d.m.y') }}{% endif %}</td>
+                            <td>{{ operation.procent }}</td>
+                            <td>{{ operation.assessedValue }}</td>
+                            <td>{% if operation.datePay %}
+                                    {{ operation.datePay|date('d.m.y') }}
+                                {% endif %}
+                                {% if operation.actualDate %}
+                                    - {{ operation.actualDate|date('d.m.y') }}
+                                {% endif %}
+                            </td>
+                            <td>{{ operation.day }} дней<br/></td>
+                            <td>{{ operation.sum }}</td>
+                            <td>{{ blank.referencePledge }} <br/> {{ operation.description }}<br/>
+                              {#   {% if blank.lastOperation.auto %}
+                                    <span style="color: green">Доверенность до: {{ blank.auto.validityLombard|date('d.m.y') }}</span>
+                                {% endif %} #}
+                            </td>
+                            <td>{{ operation.operationType }}</td>
+                            <td>{{ blank.referenceBlankPledgeStatus }}</td>
+                            <td>
+                                {% if operation.actualDate %}
+                                    {% set date = operation.date.getTimestamp() %}
+                                    {% set actualDate = operation.actualDate.getTimestamp() %}
+                                    {% if actualDate > date %}
+                                        {% if (actualDate-date)/86400 > operation.day %}
+                                            {{ (actualDate-date)/86400 - operation.day }}
+                                        {% endif %}
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{operation.user.staff}}
+                            </td>
+                            <td></td>
+                        </tr>
+                            {% set i = i + 1 %}
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td>{{ i }}</td>
+                            <td><a href="{{ path('blanks-pledge-show', { 'id': blank.id }) }}">{{ operation.number}}</a></td>
+                            <td>{% if blank.getBeforeOperation(operation.id).date %}{{ blank.getBeforeOperation(operation.id).date|date('d.m.y') }}{% endif %}</td>
+                            <td>{{ blank.getBeforeOperation(operation.id).procent }}</td>
+                            <td>{{ blank.getBeforeOperation(operation.id).assessedValue }}</td>
+                            <td>{% if blank.getBeforeOperation(operation.id).datePay %}
+                                    {{ blank.getBeforeOperation(operation.id).datePay|date('d.m.y') }}
+                                {% endif %}
+                                {% if blank.getBeforeOperation(operation.id).actualDate %}
+                                    - {{ blank.getBeforeOperation(operation.id).actualDate|date('d.m.y') }}
+                                {% endif %}
+                            </td>
+                            <td>{{ blank.getBeforeOperation(operation.id).day }} дней<br/></td>
+                            <td>{{ blank.getBeforeOperation(operation.id).sum }}</td>
+                            <td>{{ blank.referencePledge }} <br/> {{ blank.getBeforeOperation(operation.id).description }}<br/>
+                                {#   {% if blank.lastOperation.auto %}
+                                    <span style="color: green">Доверенность до: {{ blank.auto.validityLombard|date('d.m.y') }}</span>
+                                {% endif %} #}
+                            </td>
+                            <td>{{ operation.operationType }}</td>
+                            <td>{{ blank.referenceBlankPledgeStatus }}</td>
+                            <td>
+                                {% if blank.getBeforeOperation(operation.id).actualDate %}
+                                    {% set date = blank.getBeforeOperation(operation.id).date.getTimestamp() %}
+                                    {% set actualDate = blank.getBeforeOperation(operation.id).actualDate.getTimestamp() %}
+                                    {% if actualDate > date %}
+                                        {% if (actualDate-date)/86400 > blank.getBeforeOperation(operation.id).day %}
+                                            {{ (actualDate-date)/86400 - blank.getBeforeOperation(operation.id).day }}
+                                        {% endif %}
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if blank.user is defined and blank.user.staff is defined %}
+                                    {{ blank.user.staff }}
+                                {% endif %}
+                            </td>
+                            <td></td>
+                        </tr>
+                        {% set i = i + 1 %}
+                        </tr>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+
+            <tr style="height: 25px"></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <h4>История статусов</h4>
+    <table class="records_list table table-bordered table-hover">
+        <thead>
+        <tr>
+            <th>Дата</th>
+            <th>Примечание</th>
+            <th>Статус</th>
+            <th>Изменил</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for entity in statuses %}
+            <tr>
+                <td>{% if entity.dateadd %}{{ entity.dateadd|date('d.m.Y H:i:s') }}{% endif %}</td>
+                <td>{{ entity.note }}</td>
+                <td>
+                    <span style="color:{{ entity.referenceClientStatus.color }}">{{ entity.referenceClientStatus.name }}</span>
+                </td>
+                <td>
+                    {% if entity.user %}
+                        {{ entity.user.username }}
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h4>История документов</h4>
+    <table class="records_list table table-bordered table-hover">
+        <thead>
+        <tr>
+            <th>Дата</th>
+            <th>Примечание</th>
+            <th>Документ</th>
+            <th>Дата выдачи</th>
+            <th>Орган выдавший документ</th>
+            <th>Срок действия</th>
+            <th>Гражданство</th>
+            <th>Изменил</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for entity in identityCards %}
+            <tr>
+                <td>{% if entity.dateadd %}{{ entity.dateadd|date('d.m.Y H:i:s') }}{% endif %}</td>
+                <td>{{ entity.note }}</td>
+                <td>{% for item in referenceDocumentType %}
+                        {% if item.id == entity.data.referenceDocumentType %}
+                            {{ item.name }}
+                        {% endif %}
+                    {% endfor %}
+                    {{ entity.data.number }}
+                </td>
+                <td>{{ entity.data.date_issue|date('d.m.Y') }}</td>
+                <td>{{ entity.data.department }}</td>
+                <td>{% if entity.data.validity %}{{ entity.data.validity|date('d.m.Y') }}{% endif %}</td>
+                <td>
+                    {% for item in referenceCountry %}
+                        {% if item.id == entity.data.referenceCountry %}
+                            {{ item.name }}
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td>
+                    {{ entity.user.username }}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    {% if entity.smsPhoneHistory|length > 0%}
+        <h4>История изменения номера телефона для уведомлений</h4>
+        <table class="records_list table table-bordered table-hover">
+            <thead>
+            <tr>
+                <th>Дата</th>
+                <th>Номер</th>
+                <th>Изменил</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for smsPhoneHistory in entity.smsPhoneHistory %}
+                <tr>
+                    <td>{{ smsPhoneHistory.dateadd|date('d.m.Y H:i:s') }}</td>
+                    <td>{{ smsPhoneHistory.phone }}</td>
+                    <td>{{ smsPhoneHistory.user.username }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endblock %}

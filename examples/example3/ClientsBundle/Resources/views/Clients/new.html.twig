@@ -1,0 +1,177 @@
+{% extends 'base.html.twig' %}
+{% block title %}Добавление Клиента{% endblock %}
+{% block controlpanel %}
+    <div id="buttons" style="width: 100%">
+        <a class="btn_a" href="{{ path('clients') }}">Назад</a>
+    </div>
+{% endblock  controlpanel %}
+{% block content %}
+    <form class="form-horizontal" action="{{ path('clients_create') }}" method="post">
+        <fieldset class="">
+            <div class="text-error">
+                {{ form_errors(form) }}
+            </div>
+            {{ form_row(form._token) }}
+            <span class="span5 well">
+            {{ form_row(form.lastname) }}
+                {{ form_row(form.firstname) }}
+                {{ form_row(form.secondname) }}
+                {{ form_row(form.referenceClientType) }}
+                {{ form_row(form.inn) }}
+                {{ form_row(form.address) }}
+                {{ form_row(form.phone) }}
+                {{ form_row(form.smsPhone) }}
+                {{ form_row(form.notSetSmsPhone) }}
+
+                <legend>Документ</legend>
+                {{ form_row(form.identityCard.referenceDocumentType) }}
+                {{ form_row(form.identityCard.number) }}
+                {{ form_row(form.identityCard.date_issue) }}
+                {{ form_row(form.identityCard.department) }}
+                {{ form_row(form.identityCard.validity) }}
+                {{ form_row(form.identityCard.referenceCountry) }}
+
+        </span>
+        <span class="span5 well">
+            {{ form_row(form.referenceLegalForm) }}
+            {{ form_row(form.legal_name) }}
+            {{ form_row(form.legal_inn) }}
+            {{ form_row(form.okpo) }}
+            {{ form_row(form.bank_account) }}
+            {{ form_row(form.tax) }}
+
+
+            {{ form_row(form.referenceFamily) }}
+            {{ form_row(form.referenceGender) }}
+            {{ form_row(form.email) }}
+            {{ form_row(form.note) }}
+            {{ form_row(form.bussiness) }}
+            <div>
+                <label for="site_clientsbundle_clientstype_referenceClientStatus" class="required">Статус</label>
+                <select id="site_clientsbundle_clientstype_referenceClientStatus" name="site_clientsbundle_clientstype[referenceClientStatus]" required="required" class="EntTab">
+                    {% for referenceClientStatus in referenceClientStatus%}
+                        <option
+                            {% if entity.referenceClientStatus %}
+                                {% if entity.referenceClientStatus.id == referenceClientStatus.id %}
+                                    selected="selected"
+                                {% endif %}
+                            {% endif %}
+                            value="{{ referenceClientStatus.id }}">{{ referenceClientStatus.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {{ form_row(form.enabled) }}
+				<legend>
+					Каналы привлечения клиента
+				</legend>
+				{{ form_row(form.clientsChannels) }}
+				{{ form_row(form.otherChannel) }}
+
+        </span>
+        </fieldset>
+        <div class="form-actions">
+            <a id="saveButton" onclick="saveClient()" class="btn btn-primary">Сохранить</a>
+            <a class="btn" href="{{ path('clients') }}">
+                Отмена
+            </a>
+        </div>
+    </form>
+    <script type="text/javascript">
+        function saveClient () {
+            let channels = document.getElementsByName("site_clientsbundle_clientstype[clientsChannels][]");
+
+            let counter=0;
+
+            for(let i=0;i<channels.length;i++) {
+                if(channels[i].checked){
+                    counter++;
+                }
+            }
+            if(counter != 0){
+                $('#saveButton').contents().unwrap().wrap('<button id="saveButton" class="btn btn-primary" type="submit"><button/>');
+                $('#saveButton').trigger('click');
+            } else{
+                alert('Выберите канал(ы) привлечения клиента');
+            }
+        }
+        function showHideOtherChannel(show = true)
+        {
+            if (show === true) {
+                $('#site_clientsbundle_clientstype_otherChannel').parent().show();
+                $('#site_clientsbundle_clientstype_otherChannel').attr('required', true);
+            } else {
+                $('#site_clientsbundle_clientstype_otherChannel').parent().hide();
+                $('#site_clientsbundle_clientstype_otherChannel').removeAttr('required');
+            }
+        }
+        $('#site_clientsbundle_clientstype_clientsChannels input').last().change(function(){
+            if($('#site_clientsbundle_clientstype_clientsChannels input').last().prop('checked')){
+                showHideOtherChannel();
+            } else{
+                showHideOtherChannel(false);
+            }
+        });
+        $('#site_clientsbundle_clientstype_otherChannel').parent().hide();
+        $('[for ^=site_clientsbundle_clientstype_referenceLegalForm]').parent().hide('slide')
+        $('[for ^=site_clientsbundle_clientstype_okpo]').parent().hide();
+        $('[for ^=site_clientsbundle_clientstype_legal_inn]').parent().hide();
+        $('[for ^=site_clientsbundle_clientstype_bank_account]').parent().hide();
+        $('[for ^=site_clientsbundle_clientstype_tax]').parent().hide();
+        $('[for ^=site_clientsbundle_clientstype_legal_name]').parent().hide();
+        $('[for ^=site_clientsbundle_clientstype_enabled]').parent().hide();
+        if ($('#site_clientsbundle_clientstype_referenceClientStatus').val() == 4) {
+            $('[for ^=site_clientsbundle_clientstype_enabled]').parent().show();
+        }
+        $('#site_clientsbundle_clientstype_referenceClientStatus').change(function () {
+            if ($('#site_clientsbundle_clientstype_referenceClientStatus').val() == 4) {
+                $('[for ^=site_clientsbundle_clientstype_enabled]').parent().show();
+            } else {
+                $('[for ^=site_clientsbundle_clientstype_enabled]').parent().hide();
+            }
+        })
+        if ($('#site_clientsbundle_clientstype_referenceClientType').val() != 1) {
+
+            $('[for ^=site_clientsbundle_clientstype_referenceLegalForm]').parent().show('slide');
+            $('[for ^=site_clientsbundle_clientstype_okpo]').parent().show();
+            $('[for ^=site_clientsbundle_clientstype_legal_inn]').parent().show();
+            $('[for ^=site_clientsbundle_clientstype_bank_account]').parent().show();
+            $('[for ^=site_clientsbundle_clientstype_tax]').parent().show();
+            $('[for ^=site_clientsbundle_clientstype_legal_name]').parent().show();
+        }
+        $('#site_clientsbundle_clientstype_referenceClientType').change(function () {
+            if ($('#site_clientsbundle_clientstype_referenceClientType').val() != 1) {
+
+                $('[for ^=site_clientsbundle_clientstype_referenceLegalForm]').parent().show('slide');
+                $('[for ^=site_clientsbundle_clientstype_okpo]').parent().show();
+                $('[for ^=site_clientsbundle_clientstype_legal_inn]').parent().show();
+                $('[for ^=site_clientsbundle_clientstype_bank_account]').parent().show();
+                $('[for ^=site_clientsbundle_clientstype_tax]').parent().show();
+                $('[for ^=site_clientsbundle_clientstype_legal_name]').parent().show();
+                $('[for ^=site_clientsbundle_clientstype_referenceFamily]').parent().hide();
+                $('[for ^=site_clientsbundle_clientstype_referenceGender]').parent().hide();
+            } else {
+                $('[for ^=site_clientsbundle_clientstype_referenceLegalForm]').parent().hide('slide')
+                $('[for ^=site_clientsbundle_clientstype_okpo]').parent().hide();
+                $('[for ^=site_clientsbundle_clientstype_legal_inn]').parent().hide();
+                $('[for ^=site_clientsbundle_clientstype_bank_account]').parent().hide();
+                $('[for ^=site_clientsbundle_clientstype_tax]').parent().hide();
+                $('[for ^=site_clientsbundle_clientstype_legal_name]').parent().hide();
+                $('[for ^=site_clientsbundle_clientstype_referenceFamily]').parent().show();
+                $('[for ^=site_clientsbundle_clientstype_referenceGender]').parent().show();
+            }
+        });
+        // $("#site_clientsbundle_clientstype_smsPhone").mask("996XXXXXXXXX");
+        $("#site_clientsbundle_clientstype_smsPhone").attr('required', 'required');
+        $('#site_clientsbundle_clientstype_notSetSmsPhone').change(function () {
+            if ($('#site_clientsbundle_clientstype_notSetSmsPhone').prop("checked")) {
+                $("#site_clientsbundle_clientstype_smsPhone").val(null);
+                $("#site_clientsbundle_clientstype_smsPhone").removeAttr('required');
+                $("#site_clientsbundle_clientstype_smsPhone").parent().hide();
+            } else {
+                $("#site_clientsbundle_clientstype_smsPhone").attr('required', 'required');
+                $("#site_clientsbundle_clientstype_smsPhone").parent().show();
+            }
+        });
+    </script>
+{% endblock %}

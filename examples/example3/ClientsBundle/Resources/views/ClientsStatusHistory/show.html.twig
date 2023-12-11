@@ -1,0 +1,26 @@
+<h1>ClientsStatusHistory</h1>
+
+<table class="record_properties">
+    <tbody>
+        <tr>
+            <th>Id</th>
+            <td>{{ entity.id }}</td>
+        </tr>
+        <tr>
+            <th>Date_add</th>
+            <td>{{ entity.dateadd|date('Y-m-d H:i:s') }}</td>
+        </tr>
+        <tr>
+            <th>Note</th>
+            <td>{{ entity.note }}</td>
+        </tr>
+    </tbody>
+</table>
+
+<ul class="record_actions">
+    <li>
+        <a href="{{ path('clientsstatushistory') }}">
+            Back to the list
+        </a>
+    </li>
+</ul>

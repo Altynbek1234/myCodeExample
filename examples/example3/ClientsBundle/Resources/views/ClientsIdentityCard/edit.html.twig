@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+{% block title %}Редактирование Удостоверение личности {% endblock %}
+{% block controlpanel%}
+<div id="buttons"> 
+    <a id="add" href="{{ path('clients_identitycard_new') }}">Добавить удостоверение личности</a>
+</div>
+<div id="search">
+    <!--будет вывод через модуль поиска-->
+    <form>
+        <input id="searchfield" class="inputsearch" type="text" name="searchfield" value=""/>
+        <input id="searchbutton" class="searchbutton" type="button" name="searchbutton" value="ПОИСК"/>
+        <p>Номер Залогового билета, ИНН, ФИО клиента</p>
+    </form>
+</div><!--search-->
+{% endblock %}
+{% block content %}
+<form class="form-horizontal" action="{{ path('clients_identitycard_update', { 'id': entity.id }) }}" method="post">
+    {{ form_widget(edit_form) }}
+    
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a class="btn" href="{{ path('clients_show',{'id':entity.client.id}) }}">
+            Назад
+        </a>
+    </div>
+</form>
+{% endblock %}

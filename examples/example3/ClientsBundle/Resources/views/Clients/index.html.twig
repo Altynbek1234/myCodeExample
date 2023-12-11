@@ -1,0 +1,172 @@
+{% extends 'base.html.twig' %}
+{% block title %} Клиенты {% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+{% block controlpanel %}
+    <div id="buttons">
+        {% if not is_granted('ROLE_DIRECTOR') %}
+            <a id="add" href="{{ path('clients_new') }}">Добавить клиента</a>
+        {% endif %}
+        <a id="export" href="{{ path('clients_pdf') }}">Печать</a>
+    </div>
+    <form action="{{ path('clients') }}" method="post" id="clientform">
+        <!--search-->
+        <div id="search">
+            <!--будет вывод через модуль поиска-->
+                <input id="searchclient" class="inputsearch" type="text" name="searchclient"
+                       value="{{ app.session.get('searchclient') }}"/>
+                <input id="orderclient" class="inputsearch" type="hidden" name="orderclient"
+                       value="{% if order %}{{ order }}{% else %} {% endif %}"/>
+                <input id="orderdirclient" class="inputsearch" type="hidden" name="orderdirclient"
+                       value="DESC"/>
+                <p>ИНН, ФИО клиента</p>
+        </div>
+        <!--date-->
+        <div id="date-range">
+            <input type="text" class="" id="date-range-field" />
+            <div id="datepicker-calendar"></div>
+            <input id="searchbuttonclient" class="searchbutton" type="submit" name="searchbuttonclient" value="ПОИСК"/>
+            <input id="resetbuttonclient" class="searchbutton" type="submit" name="resetbuttonclient" value="ОЧИСТИТЬ"/>
+            <input type="hidden" value="{{app.session.get('date_from_client')}}" name="date_from_client" id="date_from">
+            <input type="hidden" value="{{app.session.get('date_to_client')}}" name="date_to_client" id="date_to">
+        </div>
+        <!--filter-->
+        <div id="filter" class="controlpanel-filter">
+            <div class="controlpanel-filter-item">
+                <select name="filterclient" class="searchselect" id="searchselectclient">
+                    <option value="all">все</option>
+                    {% for status in statuses %}
+                        <option value="{{ status.id }}" {% if(filter==status.id) %} selected="selected" {% endif %}>{{ status.name }}</option>
+                    {% endfor %}
+                        <option value="fiu" {% if(filter=='fiu') %} selected="selected" {% endif %}>Фин. разведка</option>
+                </select>
+            </div>
+            <div class="controlpanel-filter-item">
+                <select name="filterclienttype" class="searchselect" id="searchselectclienttype">
+                    <option value="all">все</option>
+                    {% for type in types %}
+                        <option value="{{ type.id }}" {% if(filtertype==type.id) %} selected="selected" {% endif %}>{{ type.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+{% block content %}
+    <table class="records_list table table-bordered table-hover list fixed">
+        <thead>
+        <tr>
+            <th><a href="#" onclick="order_client('c.firstname', {% if orderdir=='DESC' %}'ASC'{% else %}'DESC'{% endif %})">ФИО</a></th>
+            {% if filter == 'fiu' %}
+                <th>Информация</th>
+            {% else %}
+                <th><a href="#" onclick="order_client('c.inn', {% if orderdir=='DESC' %}'ASC'{% else %}'DESC'{% endif %})">ИНН</a></th>
+                <th><a href="#" onclick="order_client('c.cell_phone', {% if orderdir=='DESC' %}'ASC'{% else %}'DESC'{% endif %})">Сот.тел.</a></th>
+                <th><a href="#" onclick="order_client('c.referenceClientStatus', {% if orderdir=='DESC' %}'ASC'{% else %}'DESC'{% endif %})">Cтатус </a></th>
+                <th>Документ</th>
+                <th>Каналы привлечения</th>
+            {% endif %}
+        </tr>
+        </thead>
+        <tbody>
+        {% for entity in entities %}
+            <tr>
+
+                {% if filter != 'fiu' %}
+                    <td><a href="{{ path('clients_show', { 'id': entity.id }) }}">{{ entity }}</a></td>
+                    <td>{{ entity.inn }}</td>
+                    <td>{{ entity.phone }}<br/>{{ entity.cellphone }}</td>
+                    <td>
+                        <span style="color:{{ entity.referenceClientStatus.color }}">{{ entity.referenceClientStatus }}</span>
+                    </td>
+                    <td>
+                        {% if entity.identityCard != '' %}
+                            {{ entity.identityCard }} <a class="btn"
+                                                         href="{{ path('clients_identitycard', { 'id': entity.id }) }}">Подробнее</a>
+                        {% else %}
+                            <a class="btn"
+                               href="{{ path('clients_identitycard_add', { 'id': entity.id }) }}">Добавить</a>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span>
+						  			{% if entity.clientsChannels != null %}
+										{% for clientChannel in entity.clientsChannels %}
+											<span> {{ clientChannel.channel }}</span>; 
+										{% endfor %}
+						  			{% else %}
+										<span>данные отсутствуют</span>
+						  			{% endif %}
+								</span>
+                    </td>
+                {% else %}
+                    <td>{{ entity }}</td>
+                    <td>
+                        <b>Дата рождения:</b> {% if entity.birthdate %}{{ entity.birthdate|date('d.m.Y') }}{% endif %}
+                        <br>
+                        <b>Место рождения:</b> {{ entity.address }}<br>
+                        <b>Основание для включения в Перечень:</b> {{ entity.osnov }}<br>
+                        <b>Примечание:</b> {{ entity.note }}<br>
+                    </td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <p>
+        Количество на указанную дату:
+        <strong>{{ sum }}</strong>
+        <br/>
+        Общее количество: <strong>{{ countAll }}</strong>
+    </p>
+    {{ pagerfanta(pagerfanta, 'twitter_bootstrap_translated') }}
+    {{ template_pagination_limit.render(pagerfanta)|raw }}
+    <script type="text/javascript">
+        $("#searchclient").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    url: "{{path('blankssearchclients')}}",
+                    dataType: "json",
+                    type: 'post',
+                    data: {
+                        value: request.term
+                    },
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                label: item.fio,
+                                value: item.fio,
+                                value_id: item.id,
+                                fiu: item.fiu
+                            }
+                        }));
+                    }
+                });
+            },
+            minLength: 2,
+            select: function (event, ui) {
+                if (ui.item.fiu == true) {
+                    $('#site_blanksbundle_blankspledgetype_client').val("");
+                    alert('Клиент находится в списке Фин. разведки');
+                    $('#client').val("");
+                    return false;
+                } else {
+                    window.location  = '/clients/'+ui.item.value_id+'/show'
+                }
+
+            }
+        });
+    </script>
+    <script>
+        $( document ).ready(function() {
+             $( "#searchbuttonclient").click(function( event ) {
+                if ($('#date_from').val() === 'Invalid Date' 
+                    || $('#date_to').val() === 'Invalid Date') {
+                    alert( "Не верный формат дат периода." );
+                    event.preventDefault();
+                } 
+            });
+        });
+    </script>
+{% endblock %}
